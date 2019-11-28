@@ -10,7 +10,7 @@ class Discriminator(nn.Module):
 
         self.cont_dim = cont_dim
 
-        self.convolve0 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2, padding=2)
+        self.convolve0 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2)
 
         self.convolve1 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2)
         self.normalize1 = nn.InstanceNorm2d(num_features=128)

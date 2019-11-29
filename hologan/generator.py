@@ -37,8 +37,7 @@ class Generator(nn.Module):
 
     def forward(self, z, pose, negative_slope=0.2):
 
-        w_tile = self.const.repeat((z.size(0), 1, 1, 1, 1))
-
+        w_tile = self.const.repeat((z.shape[0], 1, 1, 1, 1))
         z0 = F.leaky_relu(self.mlp0(z), negative_slope=negative_slope)
         h0 = util.adaptive_instance_normalization(w_tile, z0)
         h0 = F.leaky_relu(h0, negative_slope=negative_slope)

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from hologan.util import calc_mean_std
+from torch.nn.utils import spectral_norm
 
 
 class Discriminator(nn.Module):
@@ -11,18 +12,18 @@ class Discriminator(nn.Module):
 
         self.cont_dim = cont_dim
 
-        self.convolve0 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2)
+        self.convolve0 = spectral_norm(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2))
 
-        self.convolve1 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2)
+        self.convolve1 = spectral_norm(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2))
         self.normalize1 = nn.InstanceNorm2d(num_features=128)
 
-        self.convolve2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2)
+        self.convolve2 = spectral_norm(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2))
         self.normalize2 = nn.InstanceNorm2d(num_features=256)
 
-        self.convolve3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=2)
+        self.convolve3 = spectral_norm(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=2))
         self.normalize3 = nn.InstanceNorm2d(num_features=512)
 
-        self.convolve4 = nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, stride=2)
+        self.convolve4 = spectral_norm(nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, stride=2))
         self.normalize4 = nn.InstanceNorm2d(num_features=1024)
 
         self.linear_classifier1 = nn.Linear(256, 1)

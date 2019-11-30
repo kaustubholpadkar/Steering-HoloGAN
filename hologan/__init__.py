@@ -49,6 +49,9 @@ class HoloGAN:
             self.G.cuda()
             self.D.cuda()
 
+            self.G = torch.nn.DataParallel(self.G)
+            self.D = torch.nn.DataParallel(self.D)
+
         self.last_epoch = 0
 
         self.data_loader, self.dataset_size = util.get_data_loader(data_dir, self.batch_size)
@@ -64,7 +67,8 @@ class HoloGAN:
         angles = util.sample_angles(z.shape[0], **self.angles)
         thetas = util.get_theta(angles)
 
-        if x.is_cuda:
+        if self.use_cuda:
+            z = z.cuda()
             thetas = thetas.cuda()
 
         fake = self.G(z, thetas)
@@ -148,7 +152,7 @@ class HoloGAN:
               sample_every=5,
               verbose=True):
 
-        loss = {"g": [], "d": [], "aux": []}
+        loss = {"g": [], "d": [], "z": []}
 
         for epoch in range(self.last_epoch, epochs):
             epoch_start_time = time.time()
@@ -180,8 +184,6 @@ class HoloGAN:
             loss["g"].append(epoch_loss_g)
             loss["d"].append(epoch_loss_d)
             loss["z"].append(epoch_loss_z)
-
-
 
             print("Epoch:", epoch+1, "| g loss:", epoch_loss_g, "| d loss:", epoch_loss_d, "| z loss:", epoch_loss_z, "| time:", round(time.time() - epoch_start_time, 2), "sec")
 

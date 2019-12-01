@@ -9,7 +9,8 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        self.const = nn.Parameter(torch.randn(1, 512, 4, 4, 4), requires_grad=True)
+        self.const = nn.Parameter(torch.empty(size=(1, 512, 4, 4, 4)), requires_grad=True)
+        nn.init.normal_(self.const, std=0.447)
 
         self.mlp0 = nn.Linear(128, 512 * 2)
         nn.init.normal_(self.mlp0.weight, std=0.447)

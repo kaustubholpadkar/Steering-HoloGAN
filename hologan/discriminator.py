@@ -72,8 +72,8 @@ class Discriminator(nn.Module):
         h1 = self.normalize1(h1)
         d_h1_style = torch.cat((h1_mean, h1_var), 1)
         d_h1_style = d_h1_style.view(d_h1_style.shape[0], -1)
-        d_h1 = self.linear_classifier1(d_h1_style)
-        d_h1_logits = torch.sigmoid(d_h1)
+        d_h1_logits = self.linear_classifier1(d_h1_style)
+        # d_h1_logits = torch.sigmoid(d_h1)
         h1 = F.leaky_relu(h1, negative_slope=negative_slope)
 
         h2 = self.convolve2(h1)
@@ -81,8 +81,8 @@ class Discriminator(nn.Module):
         h2 = self.normalize2(h2)
         d_h2_style = torch.cat((h2_mean, h2_var), 1)
         d_h2_style = d_h2_style.view(d_h2_style.shape[0], -1)
-        d_h2 = self.linear_classifier2(d_h2_style)
-        d_h2_logits = torch.sigmoid(d_h2)
+        d_h2_logits = self.linear_classifier2(d_h2_style)
+        # d_h2_logits = torch.sigmoid(d_h2)
         h2 = F.leaky_relu(h2, negative_slope=negative_slope)
 
         h3 = self.convolve3(h2)
@@ -90,8 +90,8 @@ class Discriminator(nn.Module):
         h3 = self.normalize3(h3)
         d_h3_style = torch.cat((h3_mean, h3_var), 1)
         d_h3_style = d_h3_style.view(d_h3_style.shape[0], -1)
-        d_h3 = self.linear_classifier3(d_h3_style)
-        d_h3_logits = torch.sigmoid(d_h3)
+        d_h3_logits = self.linear_classifier3(d_h3_style)
+        # d_h3_logits = torch.sigmoid(d_h3)
         h3 = F.leaky_relu(h3, negative_slope=negative_slope)
 
         h4 = self.convolve4(h3)
@@ -99,8 +99,8 @@ class Discriminator(nn.Module):
         h4 = self.normalize4(h4)
         d_h4_style = torch.cat((h4_mean, h4_var), 1)
         d_h4_style = d_h4_style.view(d_h4_style.shape[0], -1)
-        d_h4 = self.linear_classifier4(d_h4_style)
-        d_h4_logits = torch.sigmoid(d_h4)
+        d_h4_logits = self.linear_classifier4(d_h4_style)
+        # d_h4_logits = torch.sigmoid(d_h4)
         h4 = F.leaky_relu(h4, negative_slope=negative_slope)
         h4f = h4.view(h4.shape[0], -1)
 

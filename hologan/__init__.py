@@ -19,9 +19,9 @@ class HoloGAN:
                  update_g_every=5,
                  style_lambda=1.,
                  latent_lambda=1.,
-                 opt_d_args={'lr': 0.0002, 'betas': (0.5, 0.999)},
-                 opt_g_args={'lr': 0.0002, 'betas': (0.5, 0.999)},
-                 opt_mi_args={'lr': 0.0002, 'betas': (0.5, 0.999)},
+                 opt_d_args={'lr': 0.00005, 'betas': (0.5, 0.999)},
+                 opt_g_args={'lr': 0.00005, 'betas': (0.5, 0.999)},
+                 opt_mi_args={'lr': 0.00005, 'betas': (0.5, 0.999)},
                  data_dir="./images"
                  ):
 

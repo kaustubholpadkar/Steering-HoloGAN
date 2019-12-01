@@ -12,28 +12,65 @@ class Generator(nn.Module):
         self.const = nn.Parameter(torch.randn(1, 512, 4, 4, 4), requires_grad=True)
 
         self.mlp0 = nn.Linear(128, 512 * 2)
+        nn.init.normal(self.mlp0.weight, std=0.447)
+        torch.nn.init.zeros_(self.mlp0.bias)
 
         self.mlp1 = nn.Linear(128, 256 * 2)
         self.dcv3d1 = nn.ConvTranspose3d(in_channels=512, out_channels=256, kernel_size=3, stride=2, padding=1, output_padding=1)
 
+        nn.init.normal(self.mlp1.weight, std=0.447)
+        torch.nn.init.zeros_(self.mlp1.bias)
+        nn.init.normal(self.dcv3d1.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv3d1.bias)
+
         self.mlp2 = nn.Linear(128, 128 * 2)
         self.dcv3d2 = nn.ConvTranspose3d(in_channels=256, out_channels=128, kernel_size=3, stride=2, padding=1, output_padding=1)
+
+        nn.init.normal(self.mlp2.weight, std=0.447)
+        torch.nn.init.zeros_(self.mlp2.bias)
+        nn.init.normal(self.dcv3d2.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv3d2.bias)
 
         self.dcv3d3 = nn.ConvTranspose3d(in_channels=128, out_channels=64, kernel_size=3, stride=1, padding=1)
         self.dcv3d4 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
 
+        nn.init.normal(self.dcv3d3.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv3d3.bias)
+        nn.init.normal(self.dcv3d4.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv3d4.bias)
+
         self.dcv2d1 = nn.ConvTranspose2d(in_channels=1024, out_channels=512, kernel_size=1, stride=1, padding=1)
+
+        nn.init.normal(self.dcv2d1.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv2d1.bias)
 
         self.mlp3 = nn.Linear(128, 256 * 2)
         self.dcv2d2 = nn.ConvTranspose2d(in_channels=512, out_channels=256, kernel_size=4, stride=2)
 
+        nn.init.normal(self.mlp3.weight, std=0.447)
+        torch.nn.init.zeros_(self.mlp3.bias)
+        nn.init.normal(self.dcv2d2.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv2d2.bias)
+
         self.mlp4 = nn.Linear(128, 64 * 2)
         self.dcv2d3 = nn.ConvTranspose2d(in_channels=256, out_channels=64, kernel_size=4, stride=2)
+
+        nn.init.normal(self.mlp4.weight, std=0.447)
+        torch.nn.init.zeros_(self.mlp4.bias)
+        nn.init.normal(self.dcv2d3.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv2d3.bias)
 
         self.mlp5 = nn.Linear(128, 32 * 2)
         self.dcv2d4 = nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1, output_padding=1)
 
+        nn.init.normal(self.mlp5.weight, std=0.447)
+        torch.nn.init.zeros_(self.mlp5.bias)
+        nn.init.normal(self.dcv2d4.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv2d4.bias)
+
         self.dcv2d5 = nn.ConvTranspose2d(in_channels=32, out_channels=3, kernel_size=4, stride=1)
+        nn.init.normal(self.dcv2d5.weight, std=0.447)
+        torch.nn.init.zeros_(self.dcv2d5.bias)
 
     def forward(self, z, pose, negative_slope=0.2):
 

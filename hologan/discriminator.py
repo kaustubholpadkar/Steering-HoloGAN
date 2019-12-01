@@ -13,17 +13,27 @@ class Discriminator(nn.Module):
         self.cont_dim = cont_dim
 
         self.convolve0 = spectral_norm(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2))
+        nn.init.normal(self.convolve0.weight, std=0.447)
+        torch.nn.init.zeros_(self.convolve0.bias)
 
         self.convolve1 = spectral_norm(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2))
+        nn.init.normal(self.convolve1.weight, std=0.447)
+        torch.nn.init.zeros_(self.convolve1.bias)
         self.normalize1 = nn.InstanceNorm2d(num_features=128)
 
         self.convolve2 = spectral_norm(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2))
+        nn.init.normal(self.convolve2.weight, std=0.447)
+        torch.nn.init.zeros_(self.convolve2.bias)
         self.normalize2 = nn.InstanceNorm2d(num_features=256)
 
         self.convolve3 = spectral_norm(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=2))
+        nn.init.normal(self.convolve3.weight, std=0.447)
+        torch.nn.init.zeros_(self.convolve3.bias)
         self.normalize3 = nn.InstanceNorm2d(num_features=512)
 
         self.convolve4 = spectral_norm(nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, stride=2))
+        nn.init.normal(self.convolve4.weight, std=0.447)
+        torch.nn.init.zeros_(self.convolve4.bias)
         self.normalize4 = nn.InstanceNorm2d(num_features=1024)
 
         self.linear_classifier1 = nn.Linear(256, 1)
@@ -32,8 +42,26 @@ class Discriminator(nn.Module):
         self.linear_classifier4 = nn.Linear(2048, 1)
         self.linear_classifier5 = nn.Linear(9216, 1)
 
+        nn.init.normal(self.linear_classifier1.weight, std=0.447)
+        nn.init.normal(self.linear_classifier2.weight, std=0.447)
+        nn.init.normal(self.linear_classifier3.weight, std=0.447)
+        nn.init.normal(self.linear_classifier4.weight, std=0.447)
+        nn.init.normal(self.linear_classifier5.weight, std=0.447)
+
+        torch.nn.init.zeros_(self.linear_classifier1.bias)
+        torch.nn.init.zeros_(self.linear_classifier2.bias)
+        torch.nn.init.zeros_(self.linear_classifier3.bias)
+        torch.nn.init.zeros_(self.linear_classifier4.bias)
+        torch.nn.init.zeros_(self.linear_classifier5.bias)
+
         self.linear_projector1 = nn.Linear(9216, 128)
         self.linear_projector2 = nn.Linear(128, self.cont_dim)
+
+        nn.init.normal(self.linear_projector1.weight, std=0.447)
+        nn.init.normal(self.linear_projector2.weight, std=0.447)
+
+        torch.nn.init.zeros_(self.linear_projector1.bias)
+        torch.nn.init.zeros_(self.linear_projector2.bias)
 
     def forward(self, x, negative_slope=0.2):
 

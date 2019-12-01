@@ -163,6 +163,6 @@ def mse_loss(prediction, target):
 
 
 def get_data_loader(data_dir, batch_size, num_workers=4):
-    dataset = datasets.ImageFolder(data_dir, transforms.Compose([transforms.RandomResizedCrop(128), transforms.ToTensor(),transforms.Normalize([0., 0., 0.], [1., 1., 1.])]))
+    dataset = datasets.ImageFolder(data_dir, transforms.Compose([transforms.Resize(128), transforms.ToTensor()]))
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     return data_loader, len(dataset)

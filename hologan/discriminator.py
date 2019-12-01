@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from hologan.util import calc_mean_std
 from torch.nn.utils import spectral_norm
+from torch.distributions.normal import Normal
 
 
 class Discriminator(nn.Module):
@@ -11,6 +12,8 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
 
         self.cont_dim = cont_dim
+
+        self.noise_generator = Normal(loc=0.0, scale=0.02)
 
         self.convolve0 = spectral_norm(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2))
         nn.init.normal_(self.convolve0.weight, std=0.02)
@@ -65,6 +68,8 @@ class Discriminator(nn.Module):
 
     def forward(self, x, negative_slope=0.2):
 
+        x = x / 127.5 - 1.
+        x = x + self.noise_generator.sample(sample_shape=x.shape).cuda()
         h0 = F.leaky_relu(self.convolve0(x), negative_slope=negative_slope)
 
         h1 = self.convolve1(h0)

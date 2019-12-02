@@ -43,7 +43,6 @@ class HoloGAN:
 
         self.g_optim = optim.Adam(filter(lambda p: p.requires_grad, self.G.parameters()), **opt_g_args)
         self.d_optim = optim.Adam(filter(lambda p: p.requires_grad, self.D.parameters()), **opt_d_args)
-        self.mi_optim = optim.Adam(filter(lambda p: p.requires_grad, chain(self.D.parameters(), self.G.parameters())), **opt_mi_args)
 
         if self.use_cuda:
             self.G.cuda()
@@ -72,20 +71,37 @@ class HoloGAN:
             thetas = thetas.cuda()
 
         fake = self.G(z, thetas)
-
-        h5s, h5, _, _, _, _, _ = self.D(fake)
-
+        h5s, h5, cont_vars, _, _, _, _ = self.D(fake)
+        aux_loss = self.latent_lambda * util.mse_loss(z, cont_vars)
         # Train Generator
-        gen_loss = util.binary_loss(h5, 1.)
+        gen_loss = util.binary_loss(h5, 1.) + aux_loss
+        gen_loss.backward()
+        self.g_optim.step()
 
-        if (itr - 1) % self.update_g_every == 0:
-            gen_loss.backward()
-            self.g_optim.step()
+        # 2nd time
+        self.g_optim.zero_grad()
+        self.d_optim.zero_grad()
+
+        angles = util.sample_angles(z.shape[0], **self.angles)
+        thetas = util.get_theta(angles)
+
+        if self.use_cuda:
+            z = z.cuda()
+            thetas = thetas.cuda()
+
+        fake = self.G(z, thetas)
+        h5s, h5, cont_vars, _, _, _, _ = self.D(fake)
+        aux_loss = self.latent_lambda * util.mse_loss(z, cont_vars)
+        # Train Generator
+        gen_loss = util.binary_loss(h5, 1.) + aux_loss
+        gen_loss.backward()
+        self.g_optim.step()
+
 
         # Train Discriminator
         self.d_optim.zero_grad()
 
-        h5s_f, h5_f, _, d_h1_logits_f, d_h2_logits_f, d_h3_logits_f, d_h4_logits_f = self.D(fake.detach())
+        h5s_f, h5_f, cont_vars, d_h1_logits_f, d_h2_logits_f, d_h3_logits_f, d_h4_logits_f = self.D(fake.detach())
         h5s_r, h5_r, _, d_h1_logits_r, d_h2_logits_r, d_h3_logits_r, d_h4_logits_r = self.D(x)
 
         d_r_loss = util.binary_loss(h5_r, 1.)
@@ -94,21 +110,12 @@ class HoloGAN:
         d_h2_loss = self.style_lambda * (util.binary_loss(d_h2_logits_r, 1.) + util.binary_loss(d_h2_logits_f, 0.))
         d_h3_loss = self.style_lambda * (util.binary_loss(d_h3_logits_r, 1.) + util.binary_loss(d_h3_logits_f, 0.))
         d_h4_loss = self.style_lambda * (util.binary_loss(d_h4_logits_r, 1.) + util.binary_loss(d_h4_logits_f, 0.))
+        aux_loss = self.latent_lambda * util.mse_loss(z, cont_vars)
 
-        d_loss = d_r_loss + d_f_loss + d_h1_loss + d_h2_loss + d_h3_loss + d_h4_loss
+        d_loss = d_r_loss + d_f_loss + d_h1_loss + d_h2_loss + d_h3_loss + d_h4_loss + aux_loss
 
         d_loss.backward()
         self.d_optim.step()
-
-        # Auxiliary Loss
-        self.mi_optim.zero_grad()
-
-        fake = self.G(z, thetas)
-        _, _, cont_vars, _, _, _, _ = self.D(fake)
-
-        aux_loss = self.latent_lambda * util.mse_loss(z, cont_vars)
-        aux_loss.backward()
-        self.mi_optim.step()
 
         # plot
         util.plot_grad_flow(self.G.named_parameters(), "generator", itr, epoch)

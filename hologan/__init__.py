@@ -215,7 +215,6 @@ class HoloGAN:
         dd['d'] = self.D.state_dict()
         dd['d_optim'] = self.d_optim.state_dict()
         dd['g_optim'] = self.g_optim.state_dict()
-        dd['mi_optim'] = self.mi_optim.state_dict()
         dd['epoch'] = epoch
         torch.save(dd, filename)
 
@@ -232,5 +231,4 @@ class HoloGAN:
             self.d_optim.load_state_dict(dd['d_optim'])
 
         self.g_optim.load_state_dict(dd['g_optim'])
-        self.mi_optim.load_state_dict(dd['mi_optim'])
         self.last_epoch = dd['epoch']

@@ -56,7 +56,7 @@ class HoloGAN:
 
         self.data_loader, self.dataset_size = util.get_data_loader(data_dir, self.batch_size)
 
-    def train_batch(self, z, x, itr):
+    def train_batch(self, z, x, itr, epoch):
 
         self.G.train()
         self.D.train()
@@ -72,6 +72,7 @@ class HoloGAN:
             thetas = thetas.cuda()
 
         fake = self.G(z, thetas)
+
         h5s, h5, _, _, _, _, _ = self.D(fake)
 
         # Train Generator
@@ -108,6 +109,10 @@ class HoloGAN:
         aux_loss = self.latent_lambda * util.mse_loss(z, cont_vars)
         aux_loss.backward()
         self.mi_optim.step()
+
+        # plot
+        util.plot_grad_flow(self.G.named_parameters(), "generator", itr, epoch)
+        util.plot_grad_flow(self.D.named_parameters(), "discriminator", itr, epoch)
 
         losses = {
             'g_loss': gen_loss.item(),
@@ -167,7 +172,7 @@ class HoloGAN:
                     batch = [batch]
                 batch = self.prepare_batch(batch)
                 z_batch = util.sample_z(batch[0].size()[0])
-                losses, outputs = self.train_batch(z_batch, *batch, itr=b)
+                losses, outputs = self.train_batch(z_batch, *batch, itr=b, epoch=epoch)
                 b += batch[0].size()[0]
 
                 running_loss_g += losses['g_loss']

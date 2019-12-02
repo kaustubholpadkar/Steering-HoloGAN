@@ -67,9 +67,13 @@ class Discriminator(nn.Module):
         torch.nn.init.zeros_(self.linear_projector2.bias)
 
     def forward(self, x, negative_slope=0.2):
-
+        print(x.shape)
         x = x / 127.5 - 1.
-        x = x + self.noise_generator.sample(sample_shape=x.shape).cuda()
+        if torch.cuda.is_available():
+            x = x + self.noise_generator.sample(sample_shape=x.shape).cuda()
+        else:
+            x = x + self.noise_generator.sample(sample_shape=x.shape)
+
         h0 = F.leaky_relu(self.convolve0(x), negative_slope=negative_slope)
 
         h1 = self.convolve1(h0)

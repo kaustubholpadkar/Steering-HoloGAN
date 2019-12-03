@@ -150,7 +150,8 @@ class HoloGAN:
             z = util.sample_z(self.batch_size)
             angles = util.sample_angles(z.shape[0], **self.angles)
             thetas = util.get_theta(angles)
-            if z.is_cuda:
+            if self.use_cuda:
+                z = z.cuda()
                 thetas = thetas.cuda()
             gz = self.G(z, thetas)
         return gz

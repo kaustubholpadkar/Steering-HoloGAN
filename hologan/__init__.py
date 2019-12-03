@@ -55,7 +55,7 @@ class HoloGAN:
 
         self.data_loader, self.dataset_size = util.get_data_loader(data_dir, self.batch_size)
 
-    def train_batch(self, z, x, itr, epoch):
+    def train_batch(self, z, x, itr, epoch, plot_batch_gradients=False):
 
         self.G.train()
         self.D.train()
@@ -118,8 +118,9 @@ class HoloGAN:
         self.d_optim.step()
 
         # plot
-        util.plot_grad_flow(self.G.named_parameters(), "generator", itr, epoch)
-        util.plot_grad_flow(self.D.named_parameters(), "discriminator", itr, epoch)
+        if plot_batch_gradients:
+            util.plot_grad_flow(self.G.named_parameters(), "generator", itr, epoch)
+            util.plot_grad_flow(self.D.named_parameters(), "discriminator", itr, epoch)
 
         losses = {
             'g_loss': gen_loss.item(),
@@ -163,7 +164,9 @@ class HoloGAN:
               result_dir="./results",
               save_every=5,
               sample_every=5,
-              verbose=True):
+              verbose=True,
+              plot_gradients=True,
+              plot_batch_gradients=False):
 
         loss = {"g": [], "d": [], "z": []}
 
@@ -180,7 +183,7 @@ class HoloGAN:
                     batch = [batch]
                 batch = self.prepare_batch(batch)
                 z_batch = util.sample_z(batch[0].size()[0])
-                losses, outputs = self.train_batch(z_batch, *batch, itr=b, epoch=epoch)
+                losses, outputs = self.train_batch(z_batch, *batch, itr=b, epoch=epoch, plot_batch_gradients=plot_batch_gradients)
                 b += batch[0].size()[0]
 
                 running_loss_g += losses['g_loss']
@@ -199,6 +202,10 @@ class HoloGAN:
             loss["z"].append(epoch_loss_z)
 
             print("Epoch:", epoch+1, "| g loss:", epoch_loss_g, "| d loss:", epoch_loss_d, "| z loss:", epoch_loss_z, "| time:", round(time.time() - epoch_start_time, 2), "sec")
+
+            if plot_gradients:
+                util.plot_grad_flow(self.G.named_parameters(), "epoch_generator", 9999, epoch)
+                util.plot_grad_flow(self.D.named_parameters(), "epoch_discriminator", 9999, epoch)
 
             if (epoch+1) % save_every == 0 and model_dir is not None:
                 self.save(filename="%s/%i.pkl" % (model_dir, epoch+1),

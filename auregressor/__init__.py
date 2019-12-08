@@ -50,7 +50,7 @@ class ActionUnitRegressor:
                 labels = batch["action_units"]
 
                 inputs = inputs.to(self.device, dtype=torch.float)
-                labels = labels.to(self.device)
+                labels = labels.to(self.device, dtype=torch.float)
 
                 # zero the parameter gradients
                 self.optimizer.zero_grad()

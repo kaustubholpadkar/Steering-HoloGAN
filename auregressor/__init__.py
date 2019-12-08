@@ -49,7 +49,7 @@ class ActionUnitRegressor:
                 inputs = batch["image"]
                 labels = batch["action_units"]
 
-                inputs = inputs.to(self.device)
+                inputs = inputs.to(self.device, dtype=torch.float)
                 labels = labels.to(self.device)
 
                 # zero the parameter gradients

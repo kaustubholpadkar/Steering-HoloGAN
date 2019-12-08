@@ -1,5 +1,6 @@
 from hologan import HoloGAN
 
+
 angles = [-30, +30, 0, 0, 0, 0]
 cont_dim = 128
 batch_size = 32
@@ -16,13 +17,13 @@ gan = HoloGAN(
     angles, cont_dim, batch_size, use_cuda, use_multiple_gpus, update_g_every, style_lambda, latent_lambda, opt_d_args, opt_g_args, data_dir
 )
 
-epochs = 10,
-model_dir = "./checkpoints",
-result_dir = "./results",
-save_every = 5,
-sample_every = 5,
-verbose = True,
-plot_gradients = True,
+epochs = 10
+model_dir = "./checkpoints"
+result_dir = "./results"
+save_every = 5
+sample_every = 5
+verbose = True
+plot_gradients = True
 plot_batch_gradients = False
 
 gan.train(

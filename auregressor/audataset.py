@@ -48,9 +48,9 @@ class ActionUnitDataset(Dataset):
         image = io.imread(img_path)
 
         csv_path = os.path.join(self.csv_dir, filename + ".csv")
-        aus = pd.read_csv(csv_path)[self.columns].to_numpy()
+        aus = pd.read_csv(csv_path)[self.columns].to_numpy()[0]
 
-        sample = {'image': image, 'action_units': np.array([aus])}
+        sample = {'image': image, 'action_units': aus}
 
         if self.transform:
             sample = self.transform(sample)

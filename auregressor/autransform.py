@@ -29,6 +29,8 @@ class Rescale(object):
     def __call__(self, sample):
         image, action_units = sample['image'], sample['action_units']
 
+        action_units = np.reshape(action_units, newshape=(action_units.shape[0], -1))
+
         h, w = image.shape[:2]
         if isinstance(self.output_size, int):
             if h > w:

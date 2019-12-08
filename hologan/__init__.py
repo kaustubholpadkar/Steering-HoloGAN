@@ -16,15 +16,16 @@ class HoloGAN:
                  cont_dim=128,
                  batch_size=32,
                  use_cuda='detect',
+                 use_multiple_gpus=True,
                  update_g_every=5,
                  style_lambda=1.,
                  latent_lambda=1.,
                  opt_d_args={'lr': 0.00005, 'betas': (0.5, 0.999)},
                  opt_g_args={'lr': 0.00005, 'betas': (0.5, 0.999)},
-                 opt_mi_args={'lr': 0.00005, 'betas': (0.5, 0.999)},
                  data_dir="./images"
                  ):
 
+        self.use_multiple_gpus = use_multiple_gpus
         self.latent_lambda = latent_lambda
         self.style_lambda = style_lambda
         assert use_cuda in [True, False, 'detect']
@@ -48,8 +49,9 @@ class HoloGAN:
             self.G.cuda()
             self.D.cuda()
 
-            self.G = torch.nn.DataParallel(self.G)
-            self.D = torch.nn.DataParallel(self.D)
+            if self.use_multiple_gpus:
+                self.G = torch.nn.DataParallel(self.G)
+                self.D = torch.nn.DataParallel(self.D)
 
         self.last_epoch = 0
 
@@ -158,7 +160,6 @@ class HoloGAN:
         return gz
 
     def train(self,
-              itr=0,
               epochs=10,
               model_dir="./checkpoints",
               result_dir="./results",
@@ -215,7 +216,6 @@ class HoloGAN:
                 gz = self.sample()
                 filename = str(epoch + 1) + ".jpg"
                 save_image(gz, os.path.join(result_dir, filename))
-
 
     def save(self, filename, epoch, legacy=False):
         dd = dict()

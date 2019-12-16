@@ -5,11 +5,21 @@ from matplotlib.lines import Line2D
 from matplotlib import pyplot as plt
 
 
-def sample_z(batch_size, z_dim=128, dist="uniform"):
+def sample_z(batch_size, const_z=False, z_dim=128, dist="uniform"):
+    np.random.seed(74)
     if dist == "uniform":
-        return torch.from_numpy(np.random.uniform(-1., 1., (batch_size, z_dim))).float()
+        if const_z:
+            a = np.random.uniform(0., 1., (1, z_dim))
+            a = np.repeat(a, batch_size, axis=0)
+        else:
+            a = np.random.uniform(-1., 1., (batch_size, z_dim))
     else:
-        return torch.from_numpy(np.random.normal(0., 1., (batch_size, z_dim))).float()
+        if const_z:
+            a = np.random.normal(0., 1., (1, z_dim))
+            a = np.repeat(a, batch_size, axis=0)
+        else:
+            a = np.random.normal(0., 1., (batch_size, z_dim))
+    return torch.from_numpy(a).float()
 
 
 def calc_mean_std(feat, eps=1e-5):
@@ -106,16 +116,28 @@ def sample_angles(bs,
                   min_angle_pitch,
                   max_angle_pitch,
                   min_angle_roll,
-                  max_angle_roll):
+                  max_angle_roll,
+                  sequential=False):
     """Sample random yaw, pitch, and roll angles"""
     angles = []
-    for i in range(bs):
-        rnd_angles = [
-            np.random.uniform(min_angle_yaw, max_angle_yaw),
-            np.random.uniform(min_angle_pitch, max_angle_pitch),
-            np.random.uniform(min_angle_roll, max_angle_roll),
-        ]
-        angles.append(rnd_angles)
+
+    if sequential:
+        d = (max_angle_yaw - min_angle_yaw) / bs
+        for i in range(bs):
+            rnd_angles = [
+                min_angle_yaw + d * i,
+                np.random.uniform(min_angle_pitch, max_angle_pitch),
+                np.random.uniform(min_angle_roll, max_angle_roll),
+            ]
+            angles.append(rnd_angles)
+    else:
+        for i in range(bs):
+            rnd_angles = [
+                np.random.uniform(min_angle_yaw, max_angle_yaw),
+                np.random.uniform(min_angle_pitch, max_angle_pitch),
+                np.random.uniform(min_angle_roll, max_angle_roll),
+            ]
+            angles.append(rnd_angles)
     return np.asarray(angles)
 
 
@@ -165,7 +187,7 @@ def mse_loss(prediction, target):
 
 
 def get_data_loader(data_dir, batch_size, num_workers=4):
-    dataset = datasets.ImageFolder(data_dir, transforms.Compose([transforms.Scale(128), transforms.RandomCrop(128), transforms.ToTensor()]))
+    dataset = datasets.ImageFolder(data_dir, transforms.Compose([transforms.CenterCrop(128), transforms.ToTensor()]))
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     return data_loader, len(dataset)
 

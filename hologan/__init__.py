@@ -145,13 +145,13 @@ class HoloGAN:
             X_batch = X_batch.cuda()
         return [X_batch]
 
-    def sample(self, seed=None):
+    def sample(self, const_z=False, seed=None):
         """Return a sample G(z)"""
         self.G.eval()
         self.D.eval()
         with torch.no_grad():
-            z = util.sample_z(self.batch_size)
-            angles = util.sample_angles(z.shape[0], **self.angles)
+            z = util.sample_z(self.batch_size, const_z=const_z, dist="normal")
+            angles = util.sample_angles(z.shape[0], **self.angles, sequential=True)
             thetas = util.get_theta(angles)
             if self.use_cuda:
                 z = z.cuda()

@@ -6,12 +6,14 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 from torchvision import models
 import time
+import numpy as np
 from auregressor.audataset import ActionUnitDataset
+from torch.utils.data.sampler import SubsetRandomSampler
 
 
 class ActionUnitRegressor:
 
-    def __init__(self, csv_dir, img_dir, lr=0.001, momentum=0.9, batch_size=128):
+    def __init__(self, csv_dir, img_dir, lr=0.001, momentum=0.9, batch_size=128, val_split=.2):
         self.use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = None
@@ -31,7 +33,15 @@ class ActionUnitRegressor:
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=self.momentum)
         self.scheduler = lr_scheduler.StepLR(self.optimizer, step_size=7, gamma=0.1)
         self.dataset = ActionUnitDataset(csv_dir=csv_dir, img_dir=img_dir)
-        self.dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=8)
+        dataset_size = len(self.dataset)
+        indices = list(range(dataset_size))
+        self.split = int(np.floor(val_split * dataset_size))
+        np.random.shuffle(indices)
+        train_indices, val_indices = indices[self.split:], indices[:self.split]
+        train_sampler = SubsetRandomSampler(train_indices)
+        val_sampler = SubsetRandomSampler(val_indices)
+        self.train_dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=self.batch_size, num_workers=8, sampler=train_sampler)
+        self.val_dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=self.batch_size, num_workers=4, sampler=val_sampler)
 
     def train_model(self, num_epochs=25):
         since = time.time()
@@ -45,7 +55,7 @@ class ActionUnitRegressor:
             running_loss = 0.0
 
             # Iterate over data.
-            for idx, batch in enumerate(self.dataloader):
+            for idx, batch in enumerate(self.train_dataloader):
                 inputs = batch["image"]
                 labels = batch["action_units"]
 
@@ -66,9 +76,31 @@ class ActionUnitRegressor:
 
             self.scheduler.step(epoch)
 
-            epoch_loss = running_loss / len(self.dataset)
+            epoch_loss = running_loss / (len(self.dataset) - self.split)
+            print('Train Loss: {:.4f}'.format(epoch_loss))
+            print()
 
-            print('Loss: {:.4f}'.format(epoch_loss))
+            self.model.eval()
+            running_loss = 0.0
+
+            # Iterate over data.
+            for idx, batch in enumerate(self.val_dataloader):
+                inputs = batch["image"]
+                labels = batch["action_units"]
+
+                inputs = inputs.to(self.device, dtype=torch.float)
+                labels = labels.to(self.device, dtype=torch.float)
+
+                # forward
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, labels)
+
+                # statistics
+                running_loss += loss.item() * inputs.size(0)
+
+            epoch_loss = running_loss / self.split
+
+            print('Val Loss: {:.4f}'.format(epoch_loss))
             print()
 
         self.last_epoch = epoch
